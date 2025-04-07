@@ -1,5 +1,6 @@
 import streamlit as st
 import numpy as np
+import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 from PIL import Image
@@ -10,7 +11,9 @@ def load_vgg19_model():
     model = load_model("vgg19.h5")
     return model
 
-model = load_vgg19_model()
+# Show spinner while loading
+with st.spinner("Loading model..."):
+    model = load_vgg19_model()
 
 # Define class labels
 class_names = ["Non-Demented", "Very Mild Demented", "Mild Demented", "Moderate Demented"]
@@ -33,11 +36,14 @@ if uploaded_file is not None:
     img_array = np.expand_dims(img_array, axis=0)
     img_array /= 255.0  # Normalize
 
-    # Predict
+    # Predict and apply softmax
     prediction = model.predict(img_array)
-    predicted_class = class_names[np.argmax(prediction)]
+    probabilities = tf.nn.softmax(prediction[0]).numpy()
+    predicted_class = class_names[np.argmax(probabilities)]
+    confidence = np.max(probabilities) * 100
 
     # Show results
     st.subheader("🧪 Prediction")
     st.write(f"**Predicted Class:** {predicted_class}")
-    st.bar_chart(prediction[0])
+    st.write(f"**Confidence:** {confidence:.2f}%")
+    st.bar_chart(probabilities)
