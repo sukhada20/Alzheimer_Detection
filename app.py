@@ -39,5 +39,8 @@ if uploaded_file is not None:
 
     # Optionally display confidence scores
     st.subheader("📊 Confidence Scores:")
-    for i, score in enumerate(prediction[0]):
-        st.write(f"{class_names[i]}: {score:.2%}")
+    if len(predictions) != len(class_names):
+        st.error("Mismatch between predicted outputs and class labels.")
+    else:
+        for i, score in enumerate(predictions):
+            st.write(f"{class_names[i]}: {score:.2%}")
